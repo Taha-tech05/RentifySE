@@ -1,16 +1,355 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox xmlns="http://javafx.com/javafx" 
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="ui.controllers.RenterController"
-      alignment="CENTER" spacing="20">
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
+<!--
+    CHANGE FROM ORIGINAL: Wrapped the original HBox root inside a BorderPane
+    so we can add a top header bar with window controls (minimize/maximize/close).
+    The original HBox content is unchanged — it is now placed in the center.
+-->
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ui.controllers.RenterController"
+            style="-fx-background-color: #f5f7fa;"
+            prefWidth="1280" prefHeight="820">
 
-    <Label fx:id="dashboardLabel" style="-fx-font-size: 24px;"/>
-</VBox>
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--   TOP HEADER — window controls only                    -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <top>
+        <HBox alignment="CENTER_LEFT"
+              style="-fx-background-color: #2c3e50;
+                     -fx-min-height: 46; -fx-max-height: 46;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 8, 0, 0, 2);">
+
+            <!-- Logo -->
+            <HBox alignment="CENTER"
+                  style="-fx-min-width: 240; -fx-max-width: 240;
+                         -fx-min-height: 46; -fx-max-height: 46;
+                         -fx-background-color: #1a252f; -fx-padding: 0 20;">
+                <Label text="🏠  Rentify"
+                       style="-fx-text-fill: white; -fx-font-size: 17px; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <Label text="Renter Dashboard"
+                   style="-fx-text-fill: #7f8c8d; -fx-font-size: 13px; -fx-padding: 0 0 0 18;"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- Window controls -->
+            <Button text="—" onAction="#onMinimize"
+                    style="-fx-background-color: transparent; -fx-text-fill: #95a5a6;
+                           -fx-font-size: 16px; -fx-font-weight: bold;
+                           -fx-padding: 0 12; -fx-cursor: hand;"/>
+            <Button text="☐" onAction="#onMaximize"
+                    style="-fx-background-color: transparent; -fx-text-fill: #95a5a6;
+                           -fx-font-size: 15px; -fx-font-weight: bold;
+                           -fx-padding: 0 12; -fx-cursor: hand;"/>
+            <Button text="✕" onAction="#onClose"
+                    style="-fx-background-color: transparent; -fx-text-fill: #95a5a6;
+                           -fx-font-size: 17px; -fx-font-weight: bold;
+                           -fx-padding: 0 18 0 8; -fx-cursor: hand;"/>
+        </HBox>
+    </top>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--   CENTER — original HBox content completely unchanged  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <center>
+        <HBox style="-fx-background-color: #f5f7fa;">
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!--                  SIDEBAR                    -->
+            <!-- ═══════════════════════════════════════════ -->
+            <VBox
+                style="-fx-background-color: linear-gradient(to bottom, #2c3e50, #34495e);
+                       -fx-padding: 32 24 32 24;
+                       -fx-min-width: 240px;
+                       -fx-max-width: 240px;
+                       -fx-pref-width: 240px;
+                       -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 15, 0, 2, 0);"
+                spacing="6">
+
+                <!-- Logo -->
+                <Label text="🏠 Rentify"
+                       style="-fx-text-fill: white;
+                              -fx-font-size: 26px;
+                              -fx-font-weight: bold;
+                              -fx-padding: 0 0 40 0;"/>
+
+                <!-- Nav Items -->
+                <HBox fx:id="navDashboard" onMouseClicked="#onDashboardClicked" spacing="14" alignment="CENTER_LEFT"
+                      style="-fx-padding: 14 18;
+                             -fx-background-radius: 10;
+                             -fx-background-color: rgba(255,255,255,0.15);
+                             -fx-cursor: hand;">
+                    <Label text="🏠" style="-fx-font-size: 16px;"/>
+                    <Label text="Dashboard"
+                           style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </HBox>
+
+                <HBox fx:id="navBookings" onMouseClicked="#onBookingsClicked" spacing="14" alignment="CENTER_LEFT"
+                      style="-fx-padding: 14 18;
+                             -fx-background-radius: 10;
+                             -fx-background-color: transparent;
+                             -fx-cursor: hand;">
+                    <Label text="📋" style="-fx-font-size: 16px;"/>
+                    <Label text="My Bookings"
+                           style="-fx-text-fill: rgba(255,255,255,0.75); -fx-font-size: 14px;"/>
+                </HBox>
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+                <!-- Logout -->
+                <HBox onMouseClicked="#onLogoutClicked" spacing="14" alignment="CENTER_LEFT"
+                      style="-fx-padding: 14 18;
+                             -fx-background-radius: 10;
+                             -fx-background-color: rgba(231,76,60,0.12);
+                             -fx-border-color: #e74c3c;
+                             -fx-border-width: 1;
+                             -fx-border-radius: 10;
+                             -fx-cursor: hand;">
+                    <Label text="🚪" style="-fx-font-size: 16px;"/>
+                    <Label text="Logout"
+                           style="-fx-text-fill: #e74c3c; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </HBox>
+            </VBox>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!--              MAIN CONTENT AREA              -->
+            <!-- ═══════════════════════════════════════════ -->
+            <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: #f5f7fa;">
+
+                <!-- ─────────────── TOP HEADER ─────────────── -->
+                <HBox alignment="CENTER_LEFT" spacing="16"
+                      style="-fx-background-color: white;
+                             -fx-padding: 20 32;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);">
+
+                    <VBox spacing="3">
+                        <Label fx:id="pageTitle" text="Dashboard"
+                               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <Label fx:id="pageSubtitle" text="Find your perfect rental product"
+                               style="-fx-font-size: 12px; -fx-text-fill: #95a5a6;"/>
+                    </VBox>
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <HBox spacing="14" alignment="CENTER">
+                        <VBox alignment="CENTER_RIGHT" spacing="2">
+                            <Label fx:id="userNameLabel" text="Guest User"
+                                   style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2c3e50;"/>
+                            <Label text="Renter"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #95a5a6;"/>
+                        </VBox>
+                        <StackPane style="-fx-background-color: linear-gradient(to bottom right, #3498db, #2980b9);
+                                          -fx-background-radius: 22;
+                                          -fx-min-width: 44; -fx-min-height: 44;
+                                          -fx-effect: dropshadow(gaussian, rgba(52,152,219,0.35), 6, 0, 0, 2);">
+                            <Label fx:id="avatarLabel" text="G"
+                                   style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        </StackPane>
+                    </HBox>
+                </HBox>
+
+                <!-- ══════════════════════════════════════════════════ -->
+                <!--   DASHBOARD PAGE                                   -->
+                <!-- ══════════════════════════════════════════════════ -->
+                <VBox fx:id="dashboardPage" VBox.vgrow="ALWAYS" style="-fx-background-color: #f5f7fa;">
+
+                    <HBox alignment="CENTER_LEFT" spacing="12"
+                          style="-fx-background-color: white;
+                                 -fx-padding: 16 32;
+                                 -fx-border-color: #ecf0f1;
+                                 -fx-border-width: 1 0 1 0;">
+                        <TextField fx:id="searchField"
+                                   promptText="🔍  Search products..."
+                                   style="-fx-background-color: #f8f9fa;
+                                          -fx-background-radius: 10;
+                                          -fx-border-color: #e1e8ed;
+                                          -fx-border-radius: 10;
+                                          -fx-border-width: 1;
+                                          -fx-padding: 11 16;
+                                          -fx-font-size: 14px;
+                                          -fx-pref-width: 380px;"/>
+                        <Button fx:id="searchButton" text="Search"
+                                onAction="#onSearchClicked"
+                                style="-fx-background-color: linear-gradient(to bottom, #3498db, #2980b9);
+                                       -fx-text-fill: white;
+                                       -fx-font-size: 14px;
+                                       -fx-font-weight: bold;
+                                       -fx-background-radius: 10;
+                                       -fx-padding: 11 32;
+                                       -fx-cursor: hand;
+                                       -fx-effect: dropshadow(gaussian, rgba(52,152,219,0.35), 6, 0, 0, 2);"/>
+                    </HBox>
+
+                    <VBox VBox.vgrow="ALWAYS" spacing="16" style="-fx-padding: 28 32;">
+                        <HBox alignment="CENTER_LEFT">
+                            <Label fx:id="statusLabel" text="Showing all products"
+                                   style="-fx-font-size: 16px; -fx-font-weight: 600; -fx-text-fill: #2c3e50;"/>
+                        </HBox>
+                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                                    style="-fx-background-color: transparent;
+                                           -fx-background: transparent;
+                                           -fx-border-color: transparent;">
+                            <GridPane fx:id="productGrid" hgap="24" vgap="24" style="-fx-padding: 4;"/>
+                        </ScrollPane>
+                    </VBox>
+                </VBox>
+
+                <!-- ══════════════════════════════════════════════════ -->
+                <!--   BOOKINGS PAGE                                    -->
+                <!-- ══════════════════════════════════════════════════ -->
+                <VBox fx:id="bookingsPage"
+                      visible="false" managed="false"
+                      VBox.vgrow="ALWAYS" spacing="0"
+                      style="-fx-background-color: #F0F2F5;">
+
+                    <HBox alignment="CENTER_LEFT" spacing="10"
+                          style="-fx-background-color: #1A1F2E; -fx-padding: 18 28;">
+                        <Label text="My Bookings"
+                               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF;"/>
+                        <Label fx:id="bookingCountLabel" text=""
+                               style="-fx-font-size: 12px; -fx-text-fill: #94A3B8;"/>
+                    </HBox>
+
+                    <VBox style="-fx-padding: 20 28 12 28;" spacing="10">
+                        <TableView fx:id="bookingTable" prefHeight="310"
+                                   style="-fx-background-color: #FFFFFF;
+                                          -fx-border-color: #E2E8F0; -fx-border-width: 1;
+                                          -fx-border-radius: 8; -fx-background-radius: 8;">
+                            <columns>
+                                <TableColumn fx:id="productCol"  text="Product"     prefWidth="160"/>
+                                <TableColumn fx:id="startCol"    text="Start Date"  prefWidth="120"/>
+                                <TableColumn fx:id="endCol"      text="End Date"    prefWidth="120"/>
+                                <TableColumn fx:id="priceCol"    text="Total Price" prefWidth="110"/>
+                                <TableColumn fx:id="statusCol"   text="Status"      prefWidth="110"/>
+                                <TableColumn fx:id="paymentCol"  text="Payment"     prefWidth="100"/>
+                                <TableColumn fx:id="actionCol"   text="Actions"     prefWidth="200"/>
+                            </columns>
+                            <placeholder>
+                                <Label text="No bookings found."
+                                       style="-fx-text-fill: #94A3B8; -fx-font-size: 13px;"/>
+                            </placeholder>
+                        </TableView>
+                    </VBox>
+
+                    <!-- Return Product Panel -->
+                    <VBox fx:id="returnPanel" visible="false" managed="false"
+                          spacing="0" style="-fx-padding: 0 28 24 28;">
+                        <VBox style="-fx-background-color: #FFFFFF;
+                                     -fx-border-color: #E2E8F0; -fx-border-width: 1;
+                                     -fx-border-radius: 10; -fx-background-radius: 10;">
+
+                            <HBox alignment="CENTER_LEFT" spacing="10"
+                                  style="-fx-background-color: #1E3A5F;
+                                         -fx-padding: 13 20;
+                                         -fx-background-radius: 10 10 0 0;">
+                                <Label text="📦  Return Product"
+                                       style="-fx-text-fill: #FFFFFF; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="returnBookingIdLabel" text="Booking #—"
+                                       style="-fx-text-fill: #94A3B8; -fx-font-size: 11px;"/>
+                            </HBox>
+
+                            <HBox spacing="0" prefHeight="260">
+
+                                <!-- LEFT: Booking details -->
+                                <VBox spacing="12"
+                                      style="-fx-padding: 20 24; -fx-min-width: 270; -fx-max-width: 270;
+                                             -fx-border-color: transparent #E2E8F0 transparent transparent;
+                                             -fx-border-width: 1;">
+                                    <Label text="BOOKING DETAILS"
+                                           style="-fx-text-fill: #94A3B8; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                                    <VBox spacing="4">
+                                        <Label text="Product" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px;"/>
+                                        <Label fx:id="returnProductName" text="—"
+                                               style="-fx-text-fill: #1A1F2E; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                                    </VBox>
+                                    <VBox spacing="4">
+                                        <Label text="Rented From" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px;"/>
+                                        <Label fx:id="returnStartDate" text="—"
+                                               style="-fx-text-fill: #334155; -fx-font-size: 12px;"/>
+                                    </VBox>
+                                    <VBox spacing="4">
+                                        <Label text="Rented Until" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px;"/>
+                                        <Label fx:id="returnEndDate" text="—"
+                                               style="-fx-text-fill: #334155; -fx-font-size: 12px;"/>
+                                    </VBox>
+                                    <VBox spacing="4">
+                                        <Label text="Total Paid" style="-fx-text-fill: #94A3B8; -fx-font-size: 11px;"/>
+                                        <Label fx:id="returnTotalPrice" text="—"
+                                               style="-fx-text-fill: #1A1F2E; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                                    </VBox>
+                                    <Label fx:id="earlyReturnWarning" visible="false" managed="false"
+                                           wrapText="true"
+                                           text="⚠  Early return detected. No refund for unused days."
+                                           style="-fx-font-size: 11px; -fx-text-fill: #92400E;
+                                                  -fx-background-color: #FEF3C7;
+                                                  -fx-padding: 7 10; -fx-background-radius: 5;"/>
+                                </VBox>
+
+                                <!-- MIDDLE: Condition notes -->
+                                <VBox spacing="12" HBox.hgrow="ALWAYS"
+                                      style="-fx-padding: 20 24;
+                                             -fx-border-color: transparent #E2E8F0 transparent transparent;
+                                             -fx-border-width: 1;">
+                                    <Label text="PRODUCT CONDITION"
+                                           style="-fx-text-fill: #94A3B8; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                                    <Label text="Describe the condition of the product you are returning:"
+                                           wrapText="true"
+                                           style="-fx-text-fill: #475569; -fx-font-size: 12px;"/>
+                                    <TextArea fx:id="conditionNotesField"
+                                              promptText="e.g. Returned in good condition. Minor scratch on left side."
+                                              prefRowCount="4" wrapText="true" VBox.vgrow="ALWAYS"
+                                              style="-fx-background-color: #F8FAFC;
+                                                     -fx-border-color: #CBD5E1;
+                                                     -fx-border-radius: 6; -fx-background-radius: 6;
+                                                     -fx-border-width: 1; -fx-font-size: 12px;"/>
+                                    <Label fx:id="conditionNotesError" visible="false" managed="false"
+                                           text="Please describe the product condition before confirming."
+                                           style="-fx-text-fill: #DC2626; -fx-font-size: 11px;
+                                                  -fx-background-color: #FEE2E2;
+                                                  -fx-padding: 6 10; -fx-background-radius: 5;"/>
+                                </VBox>
+
+                                <!-- RIGHT: Actions -->
+                                <VBox spacing="14" alignment="TOP_CENTER"
+                                      style="-fx-padding: 20 24; -fx-min-width: 220; -fx-max-width: 220;">
+                                    <Label text="ACTIONS"
+                                           style="-fx-text-fill: #94A3B8; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                                    <Label text="Once confirmed, the owner will be notified and the transaction will be updated."
+                                           wrapText="true"
+                                           style="-fx-text-fill: #64748B; -fx-font-size: 11px;"/>
+                                    <Button fx:id="confirmReturnBtn" text="✓  Confirm Return"
+                                            onAction="#onConfirmReturn" maxWidth="Infinity"
+                                            style="-fx-background-color: #16A34A; -fx-text-fill: white;
+                                                   -fx-font-size: 13px; -fx-font-weight: bold;
+                                                   -fx-padding: 11 0; -fx-background-radius: 7;
+                                                   -fx-cursor: hand;"/>
+                                    <Button fx:id="cancelReturnBtn" text="Cancel"
+                                            onAction="#onCancelReturn" maxWidth="Infinity"
+                                            style="-fx-background-color: #F1F5F9; -fx-text-fill: #475569;
+                                                   -fx-font-size: 13px; -fx-padding: 11 0;
+                                                   -fx-background-radius: 7; -fx-cursor: hand;"/>
+                                    <Label fx:id="returnSuccessLabel" visible="false" managed="false"
+                                           wrapText="true"
+                                           text="✅  Returned successfully. Owner notified."
+                                           style="-fx-text-fill: #15803D; -fx-font-size: 11px;
+                                                  -fx-background-color: #DCFCE7;
+                                                  -fx-padding: 8 10; -fx-background-radius: 6;"/>
+                                </VBox>
+
+                            </HBox>
+                        </VBox>
+                    </VBox>
+
+                </VBox>
+
+            </VBox>
+        </HBox>
+    </center>
+
+</BorderPane>

@@ -1,6 +1,11 @@
 package domain.users;
 
 public class Renter extends User {
+
+	public Renter() {
+		super();
+	}
+
 	public Renter(int id, String name, String email, String password, String phone, int roleid) {
 		super(id, name, email, password, phone, roleid);
 	}

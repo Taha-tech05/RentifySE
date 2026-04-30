@@ -13,7 +13,9 @@ public abstract class User {
 	protected LocalDateTime createdAt;
 	protected int roleId;
 
-	// Constructor
+	public User() {
+	}
+
 	public User(int userid, String name, String email, String password, String phone, int roleId) {
 		this.userId = userid;
 		this.name = name;
@@ -80,6 +82,10 @@ public abstract class User {
 
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
+	}
+
+	public void setRoleId(int id) {
+		this.roleId = id;
 	}
 
 	// Abstract method for getting role name

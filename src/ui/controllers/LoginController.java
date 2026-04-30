@@ -1,5 +1,11 @@
 package ui.controllers;
 
+import domain.managers.BookingService;
+import domain.managers.PaymentService;
+import domain.managers.ProductService;
+import domain.managers.ReportService;
+import domain.managers.ReviewService;
+import domain.managers.TransactionService;
 import domain.users.User;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -7,7 +13,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -17,20 +22,29 @@ public class LoginController {
 
 	@FXML
 	private TextField emailField;
-
 	@FXML
 	private PasswordField passwordField;
 
-	@FXML
-	private Button loginButton;
+	// Services injected from MainApp
+	private ProductService productService;
+	private BookingService bookingService;
+	private PaymentService paymentService;
 
-	// =============================
-	// LOGIN LOGIC
-	// =============================
+	// Setters for Dependency Injection
+	public void setProductService(ProductService ps) {
+		this.productService = ps;
+	}
+
+	public void setBookingService(BookingService bs) {
+		this.bookingService = bs;
+	}
+
+	public void setPaymentService(PaymentService pys) {
+		this.paymentService = pys;
+	}
 
 	@FXML
 	public void onLogin(ActionEvent e) {
-
 		String email = emailField.getText().trim();
 		String password = passwordField.getText().trim();
 
@@ -41,24 +55,19 @@ public class LoginController {
 
 		try {
 			UserRepository userRepo = new UserRepository();
-
-			// If using hashing, hash password here
-			// String hashedPassword = HashUtil.hash(password);
-			String hashedPassword = password; // Temporary (if not hashing yet)
-
-			User loggedInUser = userRepo.authenticateUser(email, hashedPassword);
+			User loggedInUser = userRepo.authenticateUser(email, password);
 
 			if (loggedInUser == null) {
 				showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid email or password.");
 				return;
 			}
 
-			// Redirect based on detected role
-			switch (loggedInUser.getRole()) {
+			// Redirect with Service Injection
+			switch (loggedInUser.getRole().toUpperCase()) {
 			case "ADMIN" -> openAdminDashboard(loggedInUser, e);
 			case "OWNER" -> openOwnerDashboard(loggedInUser, e);
 			case "RENTER" -> openRenterDashboard(loggedInUser, e);
-			default -> showAlert(Alert.AlertType.ERROR, "Error", "Unknown user role.");
+			default -> showAlert(Alert.AlertType.ERROR, "Error", "Unknown user role: " + loggedInUser.getRole());
 			}
 
 		} catch (Exception ex) {
@@ -67,48 +76,70 @@ public class LoginController {
 		}
 	}
 
-	// =============================
-	// OPEN ADMIN DASHBOARD
-	// =============================
-	private void openAdminDashboard(User user, ActionEvent e) throws Exception {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/views/admin_dashboard.fxml"));
-		Scene scene = new Scene(loader.load(), 1200, 800);
-		AdminController adminCtrl = loader.getController();
-		Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-		stage.setScene(scene);
-		stage.setTitle("Rentify - Admin Dashboard");
-		stage.show();
-	}
-
-	// =============================
-	// OPEN OWNER DASHBOARD
-	// =============================
-	private void openOwnerDashboard(User user, ActionEvent e) throws Exception {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/views/owner_dashboard.fxml"));
-		Scene scene = new Scene(loader.load(), 1200, 800);
-		OwnerController ownerCtrl = loader.getController();
-		Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-		stage.setScene(scene);
-		stage.setTitle("Rentify - Owner Dashboard");
-		stage.show();
-	}
-
-	// =============================
-	// OPEN RENTER DASHBOARD
-	// =============================
 	private void openRenterDashboard(User user, ActionEvent e) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/views/renter_dashboard.fxml"));
-		Scene scene = new Scene(loader.load(), 1200, 800);
+		Scene scene = new Scene(loader.load(), 1280, 800);
+
+		// KEY STEP: Get the controller and inject the services
 		RenterController renterCtrl = loader.getController();
+
+		// Pass services so the dashboard can actually fetch products
+		renterCtrl.setProductService(productService != null ? productService : ProductService.getInstance());
+		renterCtrl.setBookingService(bookingService != null ? bookingService : BookingService.getInstance());
+		renterCtrl.setPaymentService(paymentService != null ? paymentService : PaymentService.getInstance());
+
+		// Pass user info
+		renterCtrl.setLoggedInUser(user);
+
+		// Initialize the data
+		renterCtrl.loadInitialProducts();
+
 		Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
 		stage.setScene(scene);
 		stage.setTitle("Rentify - Renter Dashboard");
-		stage.show();
+		stage.centerOnScreen();
 	}
 
-	// =============================
-	// ALERT UTILITY METHOD
-	// =============================
+	private void openOwnerDashboard(User user, ActionEvent e) throws Exception {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/views/owner_dashboard.fxml"));
+		Scene scene = new Scene(loader.load(), 1280, 800);
+
+		Object controller = loader.getController();
+		if (controller instanceof OwnerController ownerCtrl) {
+			ownerCtrl.setProductService(productService);
+			ownerCtrl.setOwnerName(user.getName()); // pass ID too
+			ownerCtrl.setOwnerUserId(user.getUserId()); // pass ID too
+			ownerCtrl.setReviewService(ReviewService.getInstance());
+			ownerCtrl.setBookingService(BookingService.getInstance());
+
+			ownerCtrl.initialize();
+		}
+
+		Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+		stage.setScene(scene);
+		stage.setTitle("Rentify - Owner Dashboard");
+	}
+
+	private void openAdminDashboard(User user, ActionEvent e) throws Exception {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/views/admin_dashboard.fxml"));
+		Scene scene = new Scene(loader.load(), 1280, 800);
+
+		Object controller = loader.getController();
+
+		if (controller instanceof ui.controllers.AdminController adminCtrl) {
+			adminCtrl.setProductService(productService);
+			adminCtrl.setTransactionService(TransactionService.getInstance()); // ← CRITICAL!
+			adminCtrl.setBookingService(BookingService.getInstance());
+			adminCtrl.setReportService(ReportService.getInstance());
+
+			adminCtrl.initialize();
+		}
+
+		Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+		stage.setScene(scene);
+		stage.setTitle("Rentify - Admin Dashboard");
+	}
+
 	private void showAlert(Alert.AlertType type, String title, String message) {
 		Alert alert = new Alert(type);
 		alert.setTitle(title);
@@ -117,9 +148,6 @@ public class LoginController {
 		alert.showAndWait();
 	}
 
-	// ================================
-	// Open registration screen
-	// ================================
 	@FXML
 	private void onOpenRegistration(ActionEvent e) {
 		try {
@@ -128,10 +156,8 @@ public class LoginController {
 			Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
 			stage.setScene(scene);
 			stage.setTitle("Rentify - Registration");
-			stage.show();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			showAlert(Alert.AlertType.ERROR, "Error", "Cannot open registration screen.");
 		}
 	}
 }
