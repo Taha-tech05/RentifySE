@@ -26,14 +26,26 @@ public class ProductRepository {
 	// ═══════════════════════════════════════
 
 	public boolean save(Product p) {
-		String sql = "INSERT INTO Product ([Name], [Type], PricePerDay, OwnerUserId, IsAvailable,ApprovalStatus) "
+		// 1. Validation: Reject if Name or Type is null/blank, or if Price is invalid
+		if (p == null || p.getName() == null || p.getName().isBlank() || p.getType() == null || p.getType().isBlank()
+				|| p.getPricePerDay() <= 0) {
+
+			System.err.println("Product Save Rejected: Missing required fields or invalid price.");
+			return false;
+		}
+
+		// 2. Database Operation
+		String sql = "INSERT INTO Product ([Name], [Type], PricePerDay, OwnerUserId, IsAvailable, ApprovalStatus) "
 				+ "VALUES (?, ?, ?, ?, 1, 'Pending')";
+
 		try (Connection c = db.connect();
 				PreparedStatement s = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
 			s.setString(1, p.getName());
 			s.setString(2, p.getType());
 			s.setDouble(3, p.getPricePerDay());
 			s.setInt(4, p.getOwnerUserId());
+
 			if (s.executeUpdate() > 0) {
 				try (ResultSet rs = s.getGeneratedKeys()) {
 					if (rs.next()) {
@@ -49,6 +61,13 @@ public class ProductRepository {
 	}
 
 	public boolean update(Product p) {
+		if (p == null || p.getName() == null || p.getName().isBlank() || p.getType() == null || p.getType().isBlank()
+				|| p.getPricePerDay() <= 0) {
+
+			System.err.println("Product Save Rejected: Missing required fields or invalid price.");
+			return false;
+		}
+
 		String sql = "UPDATE Product SET [Name]=?, [Type]=?, PricePerDay=?, "
 				+ "ApprovalStatus='Pending' WHERE ProductId=? AND OwnerUserId=?";
 		try (Connection c = db.connect(); PreparedStatement s = c.prepareStatement(sql)) {

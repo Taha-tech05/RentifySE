@@ -20,6 +20,18 @@ public class BookingRepository {
 
 	// 1. SAVE BOOKING
 	public boolean save(Booking booking) {
+		// NEW VALIDATION LOGIC
+		if (booking == null || booking.getProduct() == null || booking.getStartDate() == null
+				|| booking.getEndDate() == null) {
+			return false;
+		}
+
+		// Reject if end date is before start date
+		if (booking.getEndDate().isBefore(booking.getStartDate())) {
+			System.err.println("Booking Error: End date cannot be before start date.");
+			return false;
+		}
+
 		String sql = "INSERT INTO Booking (ProductId, OwnerUserId, RenterUserId, StartDate, EndDate, TotalPrice, Status) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
 		try (Connection conn = db.connect();

@@ -120,17 +120,34 @@ public class UserRepository {
 	// 4. UPDATE & ADD
 	// ============================================================
 	public boolean updateUser(User user) {
+		if (user == null) {
+			return false;
+		}
+		// 1. Validation: Prevent blank Name or Email
+		if (user.getName() == null || user.getName().isBlank()) {
+			System.err.println("Update Failed: Name cannot be empty.");
+			return false;
+		}
+
+		if (user.getEmail() == null || !user.getEmail().contains("@")) {
+			System.err.println("Update Failed: Valid email is required.");
+			return false;
+		}
+
+		// 2. Logic to determine table and column
 		String table = (user instanceof Admin) ? "Admins" : (user instanceof Owner) ? "ProductOwners" : "Renters";
 		String idCol = (user instanceof Admin) ? "AdminID" : (user instanceof Owner) ? "OwnerID" : "RenterID";
 
-		// ← Added Name to UPDATE
 		String sql = "UPDATE " + table + " SET Name=?, Email=?, Phone=?, RoleID=? WHERE " + idCol + "=?";
+
 		try (Connection con = db.connect(); PreparedStatement ps = con.prepareStatement(sql)) {
-			ps.setString(1, user.getName()); // ← NEW
+
+			ps.setString(1, user.getName());
 			ps.setString(2, user.getEmail());
 			ps.setString(3, user.getPhone());
 			ps.setInt(4, user.getRoleId());
 			ps.setInt(5, user.getUserId());
+
 			return ps.executeUpdate() > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -139,18 +156,33 @@ public class UserRepository {
 	}
 
 	public boolean addUser(User user) {
-		String table = (user instanceof Admin) ? "Admins" : (user instanceof Owner) ? "ProductOwners" : "Renters";
+		// 1. Validation (The part we added)
+		if (user.getEmail() == null || !user.getEmail().contains("@")) {
+			System.err.println("Validation Failed: Invalid email format.");
+			return false;
+		}
 
-		// ← Added Name to INSERT
+		String table = (user instanceof Admin) ? "Admins" : (user instanceof Owner) ? "ProductOwners" : "Renters";
 		String sql = "INSERT INTO " + table
 				+ " (Name, Email, PasswordHash, Phone, RoleID, isActive) VALUES (?, ?, ?, ?, ?, 1)";
+
 		try (Connection con = db.connect(); PreparedStatement ps = con.prepareStatement(sql)) {
-			ps.setString(1, user.getName()); // ← NEW
+
+			ps.setString(1, user.getName());
 			ps.setString(2, user.getEmail());
 			ps.setString(3, user.getPassword());
 			ps.setString(4, user.getPhone());
 			ps.setInt(5, user.getRoleId());
+
 			return ps.executeUpdate() > 0;
+
+		} catch (com.microsoft.sqlserver.jdbc.SQLServerException e) {
+			if (e.getMessage().contains("UNIQUE KEY constraint")) {
+				System.err.println("Error: A user with this email already exists.");
+			} else {
+				e.printStackTrace();
+			}
+			return false;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
