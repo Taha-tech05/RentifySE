@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package domain.managers;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
