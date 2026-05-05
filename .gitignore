@@ -1,3 +1,4 @@
 bin/
-test/domain/managers/*
-!test/domain/managers/readme.md
+test/domain/managers/ManageProductsTest.java
+test/domain/managers/RegistrationTest.java
+test/domain/managers/Adminmanageusertest.java

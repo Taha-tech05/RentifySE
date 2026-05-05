@@ -19,6 +19,10 @@ public class ReportRepository {
 
 	// ── 1. Total Revenue ──────────────────────────────────────────
 	public double getTotalRevenue(LocalDate from, LocalDate to) {
+		if (from == null && to == null) {
+			return -1;
+		}
+
 		String sql = """
 				SELECT COALESCE(SUM(p.Amount), 0)
 				FROM Payment p
